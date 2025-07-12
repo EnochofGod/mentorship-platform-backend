@@ -3,7 +3,7 @@ const asyncHandler = require('express-async-handler');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-const { User, Profile, ResetToken } = require('../models'); 
+const { User, Profile, ResetToken } = require('../models');
 const { Op } = require('sequelize');
 const jwt = require('jsonwebtoken');
 
@@ -13,7 +13,6 @@ console.log('jwtSecret (from config/jwt):', jwtSecret ? jwtSecret.substring(0, 1
 console.log('Is jwtSecret defined and non-empty?', !!jwtSecret);
 console.log('Length of jwtSecret:', jwtSecret ? jwtSecret.length : 'N/A');
 console.log('-----------------------------------------------');
-
 
 
 const {
@@ -29,13 +28,13 @@ const sendResetEmail = async (email, token) => {
     const transporter = nodemailer.createTransport({
         host: EMAIL_HOST,
         port: EMAIL_PORT,
-        secure: false, 
+        secure: false,
         auth: {
             user: EMAIL_USER,
             pass: EMAIL_PASS,
         },
     });
-  
+
     const resetUrl = `https://enochofgod.github.io/mentorship-matching-platform/reset-password?token=${token}`;
     await transporter.sendMail({
         from: EMAIL_FROM || EMAIL_USER,
@@ -46,7 +45,7 @@ const sendResetEmail = async (email, token) => {
 };
 
 const generateToken = (id) => {
-    return jwt.sign({ id }, jwtSecret, { // Using the imported jwtSecret
+    return jwt.sign({ id }, jwtSecret, {
         expiresIn: jwtExpiresIn,
     });
 };
@@ -63,14 +62,36 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error('User with that email already exists.');
     }
     const user = await User.create({ email, password, role: role || 'Mentee' });
+
+    // --- DEBUGGING LOGS FOR PROFILE CREATION ---
+    console.log('--- Register User: User Created ---');
+    console.log('User ID:', user.id);
+    console.log('User Email:', user.email);
+    console.log('User Role:', user.role);
+    console.log('Attempting to create profile for userId:', user.id);
+    // --- END DEBUGGING LOGS ---
+
     if (user) {
-        await Profile.create({ userId: user.id });
-        res.status(201).json({
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            token: generateToken(user.id),
-        });
+        try {
+            const profile = await Profile.create({ userId: user.id });
+
+            // --- DEBUGGING LOGS FOR PROFILE CREATION RESULT ---
+            console.log('Profile created successfully for userId:', user.id);
+            console.log('Profile ID:', profile.id);
+            console.log('Profile User ID:', profile.userId);
+            // --- END DEBUGGING LOGS ---
+
+            res.status(201).json({
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                token: generateToken(user.id),
+            });
+        } catch (profileError) {
+            console.error('Error creating profile for new user:', profileError);
+            res.status(500);
+            throw new Error('User registered, but failed to create profile: ' + profileError.message);
+        }
     } else {
         res.status(400);
         throw new Error('Invalid user data provided.');
@@ -81,15 +102,14 @@ const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email } });
     if (!user) {
-        res.status(400); // Changed from 401 to 400 for 'Invalid credentials'
+        res.status(400);
         throw new Error('Invalid email or password.');
     }
     if (!(await user.isValidPassword(password))) {
-        res.status(400); // Changed from 401 to 400 for 'Invalid credentials'
+        res.status(400);
         throw new Error('Invalid email or password.');
     }
 
-    // If user and password are valid
     res.json({
         id: user.id,
         email: user.email,
@@ -114,15 +134,13 @@ const forgotPassword = asyncHandler(async (req, res) => {
     }
     const user = await User.findOne({ where: { email } });
     if (!user) {
-        // For security, do not reveal if user exists
         return res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
     }
-    // Generate token and store (for demo; use DB in production)
     const token = crypto.randomBytes(32).toString('hex');
     await ResetToken.create({
         email,
         token,
-        expiresAt: new Date(Date.now() + 3600000), // Expires in 1 hour
+        expiresAt: new Date(Date.now() + 3600000),
     });
     await sendResetEmail(email, token);
     return res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
@@ -141,7 +159,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     if (!user) {
         return res.status(404).json({ message: 'User not found.' });
     }
-    user.password = password; // Password hashing is handled by User model hook
+    user.password = password;
     await user.save();
     await resetToken.destroy();
     return res.status(200).json({ message: 'Password has been reset successfully.' });
