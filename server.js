@@ -1,9 +1,33 @@
 require('dotenv').config();
 const express = require('express');
 const { Sequelize } = require('sequelize');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+
+const allowedOrigins = [
+    'http://localhost:3000', 
+    'https://enochofgod.github.io',
+    'https://responsible-bravery.up.railway.app'
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions)); 
+
 
 // Database connection
 const sequelize = new Sequelize(
