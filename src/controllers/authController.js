@@ -1,4 +1,3 @@
-
 const asyncHandler = require('express-async-handler');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
@@ -6,6 +5,7 @@ const nodemailer = require('nodemailer');
 const { User, Profile, ResetToken } = require('../models');
 const { Op } = require('sequelize');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs'); // Ensure bcryptjs is imported here if used directly
 
 const { jwtSecret, jwtExpiresIn } = require('../config/jwt');
 console.log('--- authController.js - Imported JWT_SECRET ---');
@@ -63,23 +63,20 @@ const registerUser = asyncHandler(async (req, res) => {
     }
     const user = await User.create({ email, password, role: role || 'Mentee' });
 
-    // --- DEBUGGING LOGS FOR PROFILE CREATION ---
     console.log('--- Register User: User Created ---');
     console.log('User ID:', user.id);
     console.log('User Email:', user.email);
     console.log('User Role:', user.role);
+    console.log('User Hashed Password (register):', user.password ? user.password.substring(0, 20) + '...' : 'undefined'); // Log hashed password
     console.log('Attempting to create profile for userId:', user.id);
-    // --- END DEBUGGING LOGS ---
 
     if (user) {
         try {
             const profile = await Profile.create({ userId: user.id });
 
-            // --- DEBUGGING LOGS FOR PROFILE CREATION RESULT ---
             console.log('Profile created successfully for userId:', user.id);
             console.log('Profile ID:', profile.id);
             console.log('Profile User ID:', profile.userId);
-            // --- END DEBUGGING LOGS ---
 
             res.status(201).json({
                 id: user.id,
@@ -105,7 +102,18 @@ const loginUser = asyncHandler(async (req, res) => {
         res.status(400);
         throw new Error('Invalid email or password.');
     }
-    if (!(await user.isValidPassword(password))) {
+
+    // --- DEBUGGING LOGS FOR PASSWORD COMPARISON ---
+    console.log('--- Login User: Password Comparison ---');
+    console.log('Attempting login for email:', email);
+    console.log('Provided password (first 5 chars):', password ? password.substring(0, 5) + '...' : 'undefined'); // Log provided password (partially)
+    console.log('Stored hashed password (first 20 chars):', user.password ? user.password.substring(0, 20) + '...' : 'undefined'); // Log stored hashed password (partially)
+    const isMatch = await user.isValidPassword(password);
+    console.log('Result of isValidPassword:', isMatch);
+    console.log('-------------------------------------');
+    // --- END DEBUGGING LOGS ---
+
+    if (!isMatch) {
         res.status(400);
         throw new Error('Invalid email or password.');
     }
