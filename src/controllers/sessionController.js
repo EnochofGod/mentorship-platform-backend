@@ -30,11 +30,26 @@ exports.getMentorSessions = asyncHandler(async (req, res) => {
 
 // GET /api/sessions/mentee
 exports.getMenteeSessions = asyncHandler(async (req, res) => {
-  const sessions = await db.Session.findAll({ where: { menteeId: req.user.id } });
-  const result = sessions.map(session => ({
-    ...session.toJSON(),
-    scheduledTime: session.scheduledTime ? new Date(session.scheduledTime).toISOString() : null
-  }));
+  // Get all sessions for this mentee, including mentor's profile
+  const sessions = await db.Session.findAll({
+    where: { menteeId: req.user.id },
+    include: [
+      {
+        model: db.User,
+        as: 'mentor',
+        include: [{ model: db.Profile, as: 'profile' }]
+      }
+    ]
+  });
+  // Only return sessions in the future
+  const now = new Date();
+  const result = sessions
+    .filter(session => session.scheduledTime && new Date(session.scheduledTime) > now)
+    .map(session => ({
+      ...session.toJSON(),
+      scheduledTime: session.scheduledTime ? new Date(session.scheduledTime).toISOString() : null,
+      mentorName: session.mentor && session.mentor.profile ? session.mentor.profile.name : `Mentor ${session.mentorId}`
+    }));
   res.json(result);
 });
 
