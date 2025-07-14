@@ -5,14 +5,9 @@ const nodemailer = require('nodemailer');
 const { User, Profile, ResetToken } = require('../models');
 const { Op } = require('sequelize');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs'); // Ensure bcryptjs is imported here if used directly
+const bcrypt = require('bcryptjs');
 
 const { jwtSecret, jwtExpiresIn } = require('../config/jwt');
-console.log('--- authController.js - Imported JWT_SECRET ---');
-console.log('jwtSecret (from config/jwt):', jwtSecret ? jwtSecret.substring(0, 10) + '...' : 'undefined');
-console.log('Is jwtSecret defined and non-empty?', !!jwtSecret);
-console.log('Length of jwtSecret:', jwtSecret ? jwtSecret.length : 'N/A');
-console.log('-----------------------------------------------');
 
 
 const {
@@ -24,6 +19,11 @@ const {
 } = process.env;
 
 
+/**
+ * Send a password reset email to the user
+ * @param {string} email - User's email address
+ * @param {string} token - Password reset token
+ */
 const sendResetEmail = async (email, token) => {
     const transporter = nodemailer.createTransport({
         host: EMAIL_HOST,
@@ -44,12 +44,21 @@ const sendResetEmail = async (email, token) => {
     });
 };
 
+/**
+ * Generate a JWT token for authentication
+ * @param {number} id - User ID
+ * @returns {string} - JWT token
+ */
 const generateToken = (id) => {
     return jwt.sign({ id }, jwtSecret, {
         expiresIn: jwtExpiresIn,
     });
 };
 
+/**
+ * Register a new user and create a profile
+ * @route POST /api/auth/register
+ */
 const registerUser = asyncHandler(async (req, res) => {
     const { email, password, role } = req.body;
     if (!email || !password) {
@@ -63,21 +72,9 @@ const registerUser = asyncHandler(async (req, res) => {
     }
     const user = await User.create({ email, password, role: role || 'Mentee' });
 
-    console.log('--- Register User: User Created ---');
-    console.log('User ID:', user.id);
-    console.log('User Email:', user.email);
-    console.log('User Role:', user.role);
-    console.log('User Hashed Password (register):', user.password ? user.password.substring(0, 20) + '...' : 'undefined'); // Log hashed password
-    console.log('Attempting to create profile for userId:', user.id);
-
     if (user) {
         try {
             const profile = await Profile.create({ userId: user.id });
-
-            console.log('Profile created successfully for userId:', user.id);
-            console.log('Profile ID:', profile.id);
-            console.log('Profile User ID:', profile.userId);
-
             res.status(201).json({
                 id: user.id,
                 email: user.email,
@@ -85,7 +82,6 @@ const registerUser = asyncHandler(async (req, res) => {
                 token: generateToken(user.id),
             });
         } catch (profileError) {
-            console.error('Error creating profile for new user:', profileError);
             res.status(500);
             throw new Error('User registered, but failed to create profile: ' + profileError.message);
         }
@@ -95,6 +91,10 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 });
 
+/**
+ * Authenticate a user and return a JWT token
+ * @route POST /api/auth/login
+ */
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email } });
@@ -102,22 +102,11 @@ const loginUser = asyncHandler(async (req, res) => {
         res.status(400);
         throw new Error('Invalid email or password.');
     }
-
-    // --- DEBUGGING LOGS FOR PASSWORD COMPARISON ---
-    console.log('--- Login User: Password Comparison ---');
-    console.log('Attempting login for email:', email);
-    console.log('Provided password (first 5 chars):', password ? password.substring(0, 5) + '...' : 'undefined'); // Log provided password (partially)
-    console.log('Stored hashed password (first 20 chars):', user.password ? user.password.substring(0, 20) + '...' : 'undefined'); // Log stored hashed password (partially)
     const isMatch = await user.isValidPassword(password);
-    console.log('Result of isValidPassword:', isMatch);
-    console.log('-------------------------------------');
-    // --- END DEBUGGING LOGS ---
-
     if (!isMatch) {
         res.status(400);
         throw new Error('Invalid email or password.');
     }
-
     res.json({
         id: user.id,
         email: user.email,
@@ -126,6 +115,10 @@ const loginUser = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * Get the current authenticated user
+ * @route GET /api/auth/me
+ */
 const getMe = asyncHandler(async (req, res) => {
     if (req.user) {
         res.status(200).json(req.user);
@@ -135,6 +128,10 @@ const getMe = asyncHandler(async (req, res) => {
     }
 });
 
+/**
+ * Send a password reset email if the user exists
+ * @route POST /api/auth/forgot-password
+ */
 const forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
     if (!email) {
@@ -154,6 +151,10 @@ const forgotPassword = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
 });
 
+/**
+ * Reset a user's password using a valid reset token
+ * @route POST /api/auth/reset-password
+ */
 const resetPassword = asyncHandler(async (req, res) => {
     const { token, password } = req.body;
     if (!token || !password) {
