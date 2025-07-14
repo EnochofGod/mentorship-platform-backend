@@ -19,13 +19,21 @@ exports.bookSession = asyncHandler(async (req, res) => {
 // GET /api/sessions/mentor
 exports.getMentorSessions = asyncHandler(async (req, res) => {
   const sessions = await db.Session.findAll({ where: { mentorId: req.user.id } });
-  res.json(sessions);
+  const result = sessions.map(session => ({
+    ...session.toJSON(),
+    scheduledTime: session.scheduledTime ? new Date(session.scheduledTime).toISOString() : null
+  }));
+  res.json(result);
 });
 
 // GET /api/sessions/mentee
 exports.getMenteeSessions = asyncHandler(async (req, res) => {
   const sessions = await db.Session.findAll({ where: { menteeId: req.user.id } });
-  res.json(sessions);
+  const result = sessions.map(session => ({
+    ...session.toJSON(),
+    scheduledTime: session.scheduledTime ? new Date(session.scheduledTime).toISOString() : null
+  }));
+  res.json(result);
 });
 
 // PUT /api/sessions/:id/feedback
