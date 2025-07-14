@@ -21,7 +21,9 @@ exports.getMentorSessions = asyncHandler(async (req, res) => {
   const sessions = await db.Session.findAll({ where: { mentorId: req.user.id } });
   const result = sessions.map(session => ({
     ...session.toJSON(),
-    scheduledTime: session.scheduledTime ? new Date(session.scheduledTime).toISOString() : null
+    scheduledTime: session.scheduledTime && typeof session.scheduledTime.toISOString === 'function'
+      ? session.scheduledTime.toISOString()
+      : (session.scheduledTime ? new Date(session.scheduledTime).toISOString() : null)
   }));
   res.json(result);
 });
