@@ -8,7 +8,7 @@ const ProfileModel = require('./profile');
 const RequestModel = require('./request');
 const SessionModel = require('./session');
 const AvailabilityModel = require('./availability');
-
+const ResetTokenModel = require('./resetToken');
 
 const db = {};
 db.sequelize = sequelize;
@@ -18,6 +18,7 @@ db.Profile = ProfileModel(sequelize, DataTypes);
 db.Request = RequestModel(sequelize, DataTypes);
 db.Session = SessionModel(sequelize, DataTypes);
 db.Availability = AvailabilityModel(sequelize, DataTypes);
+db.ResetToken = ResetTokenModel(sequelize, DataTypes);
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {

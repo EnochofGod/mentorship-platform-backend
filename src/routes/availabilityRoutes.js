@@ -10,7 +10,7 @@ const handleValidation = require('../middleware/validationMiddleware');
 router.post('/', [
   authenticate,
   authorize(['Mentor']),
-  body('day').isString().withMessage('Day is required'),
+  body('dayOfWeek').isString().withMessage('Day is required'),
   body('startTime').isString().withMessage('Start time is required'),
   body('endTime').isString().withMessage('End time is required'),
   handleValidation
