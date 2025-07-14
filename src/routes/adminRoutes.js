@@ -15,6 +15,11 @@ router.put('/users/:id/role', [
   body('role').isIn(['Admin', 'Mentor', 'Mentee']).withMessage('Role must be Admin, Mentor, or Mentee'),
   handleValidation
 ], adminController.updateUserRole);
+
+router.delete('/users/:id', [
+  param('id').isInt().withMessage('User ID must be an integer'),
+  handleValidation
+], adminController.deleteUser);
 router.get('/matches', adminController.getAllMatches);
 router.get('/sessions', adminController.getAllSessions);
 router.post('/assign', [

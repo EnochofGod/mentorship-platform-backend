@@ -45,3 +45,11 @@ exports.assignMentorToMentee = asyncHandler(async (req, res) => {
   }
   res.status(201).json(request);
 });
+
+// DELETE /api/admin/users/:id
+exports.deleteUser = asyncHandler(async (req, res) => {
+  const user = await db.User.findByPk(req.params.id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  await user.destroy();
+  res.json({ message: 'User deleted successfully' });
+});

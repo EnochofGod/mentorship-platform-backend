@@ -1,8 +1,8 @@
 module.exports = (sequelize, DataTypes) => {
   const Request = sequelize.define('Request', {
     id: { type: DataTypes.BIGINT, autoIncrement: true, primaryKey: true },
-    menteeId: { type: DataTypes.UUID, allowNull: false },
-    mentorId: { type: DataTypes.UUID, allowNull: false },
+    menteeId: { type: DataTypes.INTEGER, allowNull: false },
+    mentorId: { type: DataTypes.INTEGER, allowNull: false },
     status: { type: DataTypes.ENUM('PENDING', 'ACCEPTED', 'REJECTED'), defaultValue: 'PENDING' },
     message: { type: DataTypes.TEXT },
   }, { timestamps: true });

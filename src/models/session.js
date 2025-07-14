@@ -1,8 +1,8 @@
 module.exports = (sequelize, DataTypes) => {
   const Session = sequelize.define('Session', {
     id: { type: DataTypes.BIGINT, autoIncrement: true, primaryKey: true },
-    mentorId: { type: DataTypes.UUID, allowNull: false },
-    menteeId: { type: DataTypes.UUID, allowNull: false },
+    mentorId: { type: DataTypes.INTEGER, allowNull: false },
+    menteeId: { type: DataTypes.INTEGER, allowNull: false },
     requestId: { type: DataTypes.BIGINT, allowNull: false },
     scheduledTime: { type: DataTypes.DATE, allowNull: false },
     feedbackMentee: { type: DataTypes.TEXT },
