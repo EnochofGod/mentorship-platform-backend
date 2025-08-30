@@ -10,10 +10,13 @@ const adminRoutes = require('./routes/adminRoutes');
 
 
 const app = express();
+// Allowed origins for CORS (GitHub Pages, local dev, and any deployed frontend)
 const allowedOrigins = [
-    'http://localhost:3000',
-    'https://enochofgod.github.io',
-    'https://responsible-bravery.up.railway.app'
+  'http://localhost:3000',
+  'https://enochofgod.github.io',
+  'https://responsible-bravery.up.railway.app',
+  'https://mentorship-platform-backend-4jbj.onrender.com',
+  'https://mentorship-platform-backend-production.up.railway.app'
 ];
 
 const corsOptions = {
