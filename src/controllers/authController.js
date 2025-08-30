@@ -10,13 +10,13 @@ const bcrypt = require('bcryptjs');
 const { jwtSecret, jwtExpiresIn } = require('../config/jwt');
 
 
-const {
-    EMAIL_HOST,
-    EMAIL_PORT,
-    EMAIL_USER,
-    EMAIL_PASS,
-    EMAIL_FROM
-} = process.env;
+
+// Use environment variables for email configuration
+const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
+const EMAIL_PORT = process.env.EMAIL_PORT || 587;
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+const EMAIL_FROM = process.env.EMAIL_FROM || `MentorMatch <${EMAIL_USER}>`;
 
 
 /**
@@ -35,9 +35,10 @@ const sendResetEmail = async (email, token) => {
         },
     });
 
-    const resetUrl = `https://enochofgod.github.io/mentorship-matching-platform/reset-password?token=${token}`;
+    // Updated to match the correct deployed frontend URL
+    const resetUrl = `https://enochofgod.github.io/mentorship-hub/reset-password?token=${token}`;
     await transporter.sendMail({
-        from: EMAIL_FROM || EMAIL_USER,
+        from: EMAIL_FROM,
         to: email,
         subject: 'MentorMatch Password Reset',
         html: `<p>You requested a password reset for MentorMatch.</p><p>Click <a href="${resetUrl}">here</a> to reset your password, or copy and paste this link into your browser:</p><p>${resetUrl}</p>`
