@@ -1,6 +1,6 @@
 const express = require('express');
-const cors = require('cors'); // Import the CORS middleware
-const errorHandler = require('./utils/errorHandler'); // Assuming you have this
+const cors = require('cors');
+const errorHandler = require('./utils/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const requestRoutes = require('./routes/requestRoutes');

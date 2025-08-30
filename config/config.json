@@ -1,26 +1,26 @@
 {
   "development": {
-    "username": "root",
-    "password": "xzNCwOhxwhSSBWMfdgeClCbzpmMSzPfK",
-    "database": "railway",
-    "host": "shuttle.proxy.rlwy.net",
-    "port": 11304,
-    "dialect": "mysql"
+    "username": "${DB_USER}",
+    "password": "${DB_PASS}",
+    "database": "${DB_NAME}",
+    "host": "${DB_HOST}",
+    "port": "${DB_PORT}",
+    "dialect": "postgres"
   },
   "test": {
-    "username": "root",
-    "password": "xzNCwOhxwhSSBWMfdgeClCbzpmMSzPfK",
-    "database": "railway",
-    "host": "shuttle.proxy.rlwy.net",
-    "port": 11304,
-    "dialect": "mysql"
+    "username": "${DB_USER}",
+    "password": "${DB_PASS}",
+    "database": "${DB_NAME}",
+    "host": "${DB_HOST}",
+    "port": "${DB_PORT}",
+    "dialect": "postgres"
   },
   "production": {
-    "username": "root",
-    "password": "xzNCwOhxwhSSBWMfdgeClCbzpmMSzPfK",
-    "database": "railway",
-    "host": "shuttle.proxy.rlwy.net",
-    "port": 11304,
-    "dialect": "mysql"
+    "username": "${PROD_DB_USER}",
+    "password": "${PROD_DB_PASS}",
+    "database": "${PROD_DB_NAME}",
+    "host": "${PROD_DB_HOST}",
+    "port": "${PROD_DB_PORT}",
+    "dialect": "postgres"
   }
 }
